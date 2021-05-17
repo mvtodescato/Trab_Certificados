@@ -14,7 +14,7 @@ from Crypto.Util.randpool import RandomPool
 from hashlib import sha512
 import time
 #pasta do repositório no sistema
-pasta = '/home/mvtodescato/Trab_Certificados'
+pasta = '.'
 
 def assinar():
     caminhos = [os.path.join(pasta, nome) for nome in os.listdir(pasta)]
@@ -108,7 +108,7 @@ def verifica_valido():
         if count > (len(linhas)-3):
             break
         conteudo = conteudo + lin
-    conteudo = conteudo.strip("\n")
+    conteudo = conteudo[:-1]
     conteudo = conteudo.encode("utf-8")
     hash = int.from_bytes(sha512(conteudo).digest(), byteorder='big')
     assinatura = linhas[len(linhas)-1].lstrip("Assig{(").strip(",)}")
@@ -132,7 +132,7 @@ def verifica_valido():
 
     
      
-    
+#adicionar mudança da userFriendlyRNG    
 if __name__ == '__main__':
     func = int
     while(1):
