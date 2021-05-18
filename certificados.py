@@ -90,7 +90,7 @@ def gerar_certificados():
         print("CERTIFICADO VALIDADO COM SUCESSO!!")
     else:
         print("CERTIFICADO NÃO VALIDADO COM SUCESSO!!")
-        cmd = 'rm cert_'+cred +'.cert'
+        cmd = 'rm ' + pasta + '/cert_'+cred +'.cert ' + pasta + '/' + cred + '_priv' + '.pem ' + pasta + '/' + cred + '_pub' + '.pem'
         os.system(cmd)
 
     
@@ -135,9 +135,9 @@ def gerar_assinados():
     teste = (linhas[0] + linhas[1] + linhas[2]).encode('utf-8')
     hash2 = int.from_bytes(sha512(teste).digest(), byteorder='big')
     f.close()
-    if os.path.isfile('cert_'+credencial +'.cert') == False:
+    if os.path.isfile(pasta +'/cert_'+credencial +'.cert') == False:
         print("CERTIFICADO NÃO VALIDADO COM SUCESSO, CERTIFICADO DO ASSINANTE NÃO EXISTE!!")
-        cmd = 'rm cert_'+cred +'.cert'
+        cmd = 'rm ' + pasta + '/cert_'+cred +'.cert ' + pasta + '/' + cred + '_priv' + '.pem ' + pasta + '/' + cred + '_pub' + '.pem'
         os.system(cmd)
         return
     f = open(pasta +'/cert_'+credencial +'.cert','r')
@@ -153,7 +153,7 @@ def gerar_assinados():
         print("CERTIFICADO VALIDADO COM SUCESSO!!")
     else:
         print("CERTIFICADO NÃO VALIDADO COM SUCESSO!!")
-        cmd = 'rm cert_'+cred +'.cert'
+        cmd = 'rm ' + pasta + '/cert_'+cred +'.cert ' + pasta + '/' + cred + '_priv' + '.pem ' + pasta + '/' + cred + '_pub' + '.pem'
         os.system(cmd)
 
 def verifica_valido():
@@ -205,13 +205,13 @@ if __name__ == '__main__':
     func = int
     while(1):
         os.system('clear')
-        print("--------MENU--------")
+        print("-------------------MENU-------------------")
         print("1-GERAR CERTIFICADO")
         print("2-ASSINAR DOCUMENTO")
         print("3-VERIFICAR ASSINATURA")
         print("4-GERAR CERTIFICADO COM ASSINATURA DE OUTRO")
         print("5-QUIT")
-        print("--------------------")
+        print("-------------------------------------------")
         func = int(input())
         os.system('clear')
         if func == 1:
@@ -227,4 +227,4 @@ if __name__ == '__main__':
         else:
             os.system('clear')
             print("Comando inválido!!")
-        time.sleep(5)    
+        time.sleep(3)    
