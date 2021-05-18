@@ -13,22 +13,25 @@ from Crypto.PublicKey import RSA
 from Crypto.Util.randpool import RandomPool
 from hashlib import sha512
 import time
-#pasta do repositório no sistema
+#pasta onde deseja salvar os certificados/documentos que queira assinar
 pasta = '.'
 
 def assinar():
     caminhos = [os.path.join(pasta, nome) for nome in os.listdir(pasta)]
     print("Quais são as suas credenciais?")
     credencial = input()
-    arquivos = [arq for arq in caminhos if arq.lower().endswith(credencial+ '_priv' + ".pem")]
+    arquivos = [arq for arq in caminhos if arq.endswith(credencial+ '_priv' + ".pem")]
     if arquivos == []:
         print("Não encontramos chaves compatíveis com suas credenciais")
         return
     else:
         print("Chave encontrada: " + arquivos[0])
         arq_key = arquivos[0]
-    print("Qual arquivo deseja assinar?")
     arquivos = [arq for arq in caminhos if arq.lower().endswith(".txt")]
+    if arquivos == []:
+        print("SEM ARQUIVOS TXT NO DIRETÓRIO PARA ASSINAR")
+        return
+    print("Qual arquivo deseja assinar?")
     print(arquivos)
     arqv = open(arquivos[int(input()) - 1],'r')
     linhas = arqv.readlines()
@@ -40,8 +43,10 @@ def assinar():
     hash = int.from_bytes(sha512(conteudo).digest(), byteorder='big')
     assig = key.sign(hash,'')
     print("Nome do arquivo assinado:")
-    arq_assin = open(input() + '.txt','w')
+    arq_assin = open(pasta +'/' +input() + '.txt','w')
     arq_assin.write(conteudo.decode('utf-8') + "\n----Assinatura---- \nCredenciais: " + credencial + "\nAssig{" + str(assig) + '}')
+    print("ARQUIVO ASSINADO COM SUCESSO!!")
+    
 
 
 def gerar_certificados():
@@ -50,28 +55,27 @@ def gerar_certificados():
     pool = RandomPool(384)
     pool.stir()
     randfunc = pool.get_bytes
-
     N = 1024 #tamanho da chave
     K = ""
     key = RSA.generate(N, randfunc)
-    k_arq = open(cred + '_priv' + '.pem','wb')
+    k_arq = open(pasta +'/' +cred + '_priv' + '.pem','wb')
     k_arq.write(key.exportKey('PEM'))
     k_arq.close()
-    kp_arq = open(cred + '_pub' + '.pem','wb')
+    kp_arq = open(pasta +'/' +cred + '_pub' + '.pem','wb')
     kp_arq.write(key.publickey().exportKey('PEM'))
     kp_arq.close()
-    print(f"Public key:  (n={hex(key.n)}, e={hex(key.e)})")
-    print(f"Private key: (n={key.n}, d={hex(key.d)})")
+    #print(f"Public key:  (n={hex(key.n)}, e={hex(key.e)})")
+    #print(f"Private key: (n={key.n}, d={hex(key.d)})")
     assi = ("Credenciais:" +cred +'|' + "\n" + f"Public key:(n={hex(key.n)}, e={hex(key.e)})" + "\n").encode("utf-8")
     hash = int.from_bytes(sha512(assi).digest(), byteorder='big')
     ass_cert = key.sign(hash,K)
-    print(ass_cert)
-    f = open('cert_'+cred +'.cert','w')
+    f = open(pasta +'/cert_'+cred +'.cert','w')
     f.write("Credenciais:" +cred +'|' + "\n" + f"Public key:(n={hex(key.n)}, e={hex(key.e)})" + '\n' +str(ass_cert))
     f.close()
-    #####################################
     
-    f = open('cert_'+cred +'.cert','r')
+    ##################################### VERIFICAÇÃO
+    
+    f = open(pasta +'/cert_'+cred +'.cert','r')
     linhas = f.readlines()
     teste = (linhas[0] + linhas[1]).encode('utf-8')
     hash = int.from_bytes(sha512(teste).digest(), byteorder='big')
@@ -82,12 +86,76 @@ def gerar_certificados():
     newtuple = (int(tt),)
     pub_key = RSA.construct((n, e))
     hash_desc = pub_key.verify(hash,newtuple)
-    print(hash_desc)
+    if hash_desc == True :
+        print("CERTIFICADO VALIDADO COM SUCESSO!!")
+    else:
+        print("CERTIFICADO NÃO VALIDADO COM SUCESSO!!")
+        cmd = 'rm cert_'+cred +'.cert'
+        os.system(cmd)
 
     
-def gerar_autoassinados():
-    print("teste")
-    
+def gerar_assinados():
+    print('Digite suas credenciais:')
+    cred = input()
+    pool = RandomPool(384)
+    pool.stir()
+    randfunc = pool.get_bytes
+    N = 1024 #tamanho da chave
+    K = ""
+    key = RSA.generate(N, randfunc)
+    k_arq = open(pasta + '/' + cred + '_priv' + '.pem','wb')
+    k_arq.write(key.exportKey('PEM'))
+    k_arq.close()
+    kp_arq = open(pasta + '/' + cred + '_pub' + '.pem','wb')
+    kp_arq.write(key.publickey().exportKey('PEM'))
+    kp_arq.close()
+    #print(f"Public key:  (n={hex(key.n)}, e={hex(key.e)})")
+    #print(f"Private key: (n={key.n}, d={hex(key.d)})")
+    caminhos = [os.path.join(pasta, nome) for nome in os.listdir(pasta)]
+    print("Quais são as credenciais do assinante?")
+    credencial = input()
+    arquivos = [arq for arq in caminhos if arq.lower().endswith(credencial+ '_priv' + ".pem")]
+    if arquivos == []:
+        print("Não encontramos chaves compatíveis com essas credenciais")
+        return
+    else:
+        print("Chave encontrada: " + arquivos[0])
+        arq_key = arquivos[0]
+    key2 = RSA.importKey(open(arq_key,'r').read())
+    assi = ("Credenciais:" +cred +'|' + "\n" + f"Public key:(n={hex(key.n)}, e={hex(key.e)})" + "\n" + "Credenciais assinante:" + credencial + '\n').encode("utf-8")
+    hash = int.from_bytes(sha512(assi).digest(), byteorder='big')
+    ass_cert = key2.sign(hash,K)
+    f = open(pasta +'/cert_'+cred +'.cert','w')
+    f.write("Credenciais:" +cred +'|' + "\n" + f"Public key:(n={hex(key.n)}, e={hex(key.e)})" + "\n" + "Credenciais assinante:" + credencial + '\n'+str(ass_cert))
+    f.close()
+    ##################### VERIFICANDO
+    f = open(pasta +'/cert_'+cred +'.cert','r')
+    linhas = f.readlines()
+    tt = linhas[3].lstrip("(").strip(",)")
+    teste = (linhas[0] + linhas[1] + linhas[2]).encode('utf-8')
+    hash2 = int.from_bytes(sha512(teste).digest(), byteorder='big')
+    f.close()
+    if os.path.isfile('cert_'+credencial +'.cert') == False:
+        print("CERTIFICADO NÃO VALIDADO COM SUCESSO, CERTIFICADO DO ASSINANTE NÃO EXISTE!!")
+        cmd = 'rm cert_'+cred +'.cert'
+        os.system(cmd)
+        return
+    f = open(pasta +'/cert_'+credencial +'.cert','r')
+    linhas = f.readlines()
+    ne = linhas[1].split('=')
+    n = int(ne[1].strip(", e"),16)
+    e = int(ne[2].strip(")\n"),16)
+    newtuple = (int(tt),)
+    pub_key = RSA.construct((n, e))
+    hash_desc = pub_key.verify(hash2,newtuple)
+    f.close()
+    if hash_desc == True :
+        print("CERTIFICADO VALIDADO COM SUCESSO!!")
+    else:
+        print("CERTIFICADO NÃO VALIDADO COM SUCESSO!!")
+        cmd = 'rm cert_'+cred +'.cert'
+        os.system(cmd)
+
 def verifica_valido():
     caminhos = [os.path.join(pasta, nome) for nome in os.listdir(pasta)]
     arquivos = [arq for arq in caminhos if arq.lower().endswith(".txt")]
@@ -132,7 +200,7 @@ def verifica_valido():
 
     
      
-#adicionar mudança da userFriendlyRNG    
+#adicionar mudança da userFriendlyRNG t = time.perf_counter() linha 77   
 if __name__ == '__main__':
     func = int
     while(1):
@@ -141,7 +209,7 @@ if __name__ == '__main__':
         print("1-GERAR CERTIFICADO")
         print("2-ASSINAR DOCUMENTO")
         print("3-VERIFICAR ASSINATURA")
-        print("4-")
+        print("4-GERAR CERTIFICADO COM ASSINATURA DE OUTRO")
         print("5-QUIT")
         print("--------------------")
         func = int(input())
@@ -153,10 +221,10 @@ if __name__ == '__main__':
         elif func == 3:
             verifica_valido()
         elif func == 4:
-            assinar()
+            gerar_assinados()
         elif func == 5:
             break   
         else:
             os.system('clear')
             print("Comando inválido!!")
-        time.sleep(3)    
+        time.sleep(5)    
