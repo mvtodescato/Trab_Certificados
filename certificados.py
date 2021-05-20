@@ -36,14 +36,14 @@ def assinar():
     credencial = input()
     arquivos = [arq for arq in caminhos if arq.endswith(credencial+ '_priv' + ".pem")]
     if arquivos == []:
-        print("Não encontramos chaves compatíveis com suas credenciais")
+        print("Não encontramos chaves compatíveis com suas credenciais!!")
         return
     else:
         print("Chave encontrada: " + arquivos[0])
         arq_key = arquivos[0]
     arquivos = [arq for arq in caminhos if arq.lower().endswith(".txt")]
     if arquivos == []:
-        print("SEM ARQUIVOS TXT NO DIRETÓRIO PARA ASSINAR")
+        print("SEM ARQUIVOS TXT NO DIRETÓRIO PARA ASSINAR!!")
         return
     print("Qual arquivo deseja assinar?")
     
@@ -134,7 +134,7 @@ def gerar_assinados():
     credencial = input()
     arquivos = [arq for arq in caminhos if arq.lower().endswith(credencial+ '_priv' + ".pem")]
     if arquivos == []:
-        print("Não encontramos chaves compatíveis com essas credenciais")
+        print("Não encontramos chaves compatíveis com essas credenciais!")
         return
     else:
         print("Chave encontrada: " + arquivos[0])
@@ -216,9 +216,6 @@ def verifica_valido():
             return
     print("Assinatura inválida!!")
 
-    
-     
-#adicionar mudança da userFriendlyRNG t = time.perf_counter() linha 77   
 if __name__ == '__main__':
     func = int
     while(1):
