@@ -16,6 +16,20 @@ import time
 #pasta onde deseja salvar os certificados/documentos que queira assinar
 pasta = '.'
 
+def imprimir(arquivos):
+    indices = []
+    arq = []
+    for i, p in enumerate(arquivos):
+        tamanho = max(len(str(i)), len(str(p))) + 2
+        indices.append(formatar(i, tamanho))
+        arq.append(formatar(p, tamanho))
+    print(''.join(indices))
+    print(''.join(arq))
+
+
+def formatar(valor, tamanho):
+    return f'{valor:>{tamanho}}'
+
 def assinar():
     caminhos = [os.path.join(pasta, nome) for nome in os.listdir(pasta)]
     print("Quais são as suas credenciais?")
@@ -32,8 +46,12 @@ def assinar():
         print("SEM ARQUIVOS TXT NO DIRETÓRIO PARA ASSINAR")
         return
     print("Qual arquivo deseja assinar?")
-    print(arquivos)
-    arqv = open(arquivos[int(input()) - 1],'r')
+    
+    imprimir(arquivos)
+
+
+
+    arqv = open(arquivos[int(input())],'r')
     linhas = arqv.readlines()
     conteudo = ''
     for lin in linhas:
@@ -163,7 +181,7 @@ def verifica_valido():
         print("Não existem documentos na pasta para verificar!!!")
         return
     print("Qual documento deseja verificar a assinatura?")
-    print(arquivos)
+    imprimir(arquivos)
     arqv = open(arquivos[int(input()) - 1],'r')
     linhas = arqv.readlines()
     if 'Assig{' not in linhas[len(linhas) - 1]:
